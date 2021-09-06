@@ -1,0 +1,7 @@
+std_msgs/Bool test
+---
+geometry_msgs/Transform[] res_traj
+float64[] kp
+float64[] kv
+std_msgs/Bool iswholebody
+
