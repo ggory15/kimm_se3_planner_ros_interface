@@ -1,3 +1,4 @@
+#include <pinocchio/fwd.hpp>
 #include "ros/ros.h"
 
 #include "kimm_se3_planner_ros_interface/plan_se3_path.h"
@@ -13,7 +14,7 @@
 #include <kimm_trajectory_smoother/Path.h>
 #include <kimm_hqp_controller/trajectory/trajectory_se3.hpp>
 
-#include <pinocchio/fwd.hpp>
+
 using namespace std;
 using namespace Eigen;
 using namespace kimmhqp::trajectory;
