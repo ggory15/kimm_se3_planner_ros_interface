@@ -73,6 +73,7 @@ ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_
 set(EXTRA_LIB ${EXTRA_LIB} ${Boost_LIBRARIES} ${kimm_hqp_controller_LIBRARIES})
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR} ${kimm_trajectory_smoother_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${EXTRA_LIB})
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_generate_messages_cpp )
 
 #ros_tutorial_srv_server
 add_executable(${PROJECT_NAME}_server src/se3_planner_server.cpp)
