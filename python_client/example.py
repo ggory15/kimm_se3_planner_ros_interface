@@ -7,10 +7,10 @@ import rospy
 import tf
 from tf.transformations import quaternion_from_euler, quaternion_multiply
 
-from sensor_msgs.msg import JointState
+from geometry_msgs.msg import Transform
 import std_msgs.msg
 import geometry_msgs.msg
-import kimm_joint_planner_ros_interface.srv
+import kimm_se3_planner_ros_interface.srv
 from visualization_msgs.msg import Marker, MarkerArray
 import numpy as np
 
@@ -55,22 +55,17 @@ def create_line(point_list, color_rgba):
     return marker
 
 
-def joint_trajectory_deg2rad(joint_trajectory):
-    for p in joint_trajectory.points:
-        p.positions = [math.radians(t) for t in p.positions]
-    return joint_trajectory
-
 
 class Example:
     def __init__(self):
         self.listener = tf.TransformListener()
-        rospy.wait_for_service("ns0/kimm_joint_planner_ros_interface_server/plan_joint_path")
-        self.plan_joint_motion = rospy.ServiceProxy(
-            "ns0/kimm_joint_planner_ros_interface_server/plan_joint_path",
-            kimm_joint_planner_ros_interface.srv.plan_joint_path,
+        rospy.wait_for_service("ns0/kimm_se3_planner_ros_interface_server/plan_se3_path")
+        self.plan_se3_motion = rospy.ServiceProxy(
+            "ns0/kimm_se3_planner_ros_interface_server/plan_se3_path",
+            kimm_se3_planner_ros_interface.srv.plan_se3_path,
         )
-        self.req = kimm_joint_planner_ros_interface.srv.plan_joint_pathRequest()
-        self.resp = kimm_joint_planner_ros_interface.srv.plan_joint_pathResponse()
+        self.req = kimm_se3_planner_ros_interface.srv.plan_se3_pathRequest()
+        self.resp = kimm_se3_planner_ros_interface.srv.plan_se3_pathResponse()
 
     def test(self):
 #         sensor_msgs/JointState current_joint
@@ -83,13 +78,28 @@ class Example:
 # float64 vel_limit
 # float64 acc_limit
 
-        c_joint = JointState()
-        c_joint.position = np.array([0, 0, 0, 0, 0, 0])
-        self.req.current_joint = c_joint
-        self.req.target_joint = []
-        t_joint = JointState()
-        t_joint.position = np.array([0.3, 0.3, 0.3, 0.3, 0.3, 0.3])
-        self.req.target_joint.append(t_joint)
+        c_joint = Transform()
+        c_joint.translation.x = 0.
+        c_joint.translation.y = 0.
+        c_joint.translation.z = 0.
+        c_joint.rotation.x = 0.
+        c_joint.rotation.y = 0.
+        c_joint.rotation.z = 0.
+        c_joint.rotation.w = 1.
+
+
+
+        self.req.current_se3 = c_joint
+        self.req.target_se3 = []
+        t_joint = Transform()
+        t_joint.translation.x = 0.
+        t_joint.translation.y = 0.
+        t_joint.translation.z = 0.
+        t_joint.rotation.x = 1
+        t_joint.rotation.y = 0
+        t_joint.rotation.z = 0
+        t_joint.rotation.w = 0
+        self.req.target_se3.append(t_joint)
 
         self.req.duration = 0.1
         self.req.traj_type = 1
@@ -115,9 +125,10 @@ class Example:
         self.req.acc_limit = 1.0      
     
         try:
-            self.resp = self.plan_joint_motion(self.req)
+            self.resp = self.plan_se3_motion(self.req)
             for i in range(len(self.resp.res_traj)):
-                print(self.resp.res_traj[i].position)
+                print(self.resp.res_traj[i].rotation)
+                print(" ")
             rospy.logwarn("========== Done! ==========")
         except rospy.ServiceException as exc:
             print("Service did not process request: " + str(exc))

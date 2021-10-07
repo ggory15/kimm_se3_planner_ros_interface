@@ -47,10 +47,11 @@ bool calculation(kimm_se3_planner_ros_interface::plan_se3_path::Request &req, ki
     c_se3_.translation()(1) = req.current_se3.translation.y;
     c_se3_.translation()(2) = req.current_se3.translation.z;
     Eigen::Quaterniond quat;
-    quat.x() = req.current_se3.rotation.x;
+    quat.x() = req.current_se3.rotation.x ;
     quat.y() = req.current_se3.rotation.y;
     quat.z() = req.current_se3.rotation.z;
     quat.w() = req.current_se3.rotation.w;
+    quat.normalize();
     c_se3_.rotation() = quat.toRotationMatrix();
     
     t_se3_.translation()(0) = req.target_se3[0].translation.x;
@@ -60,6 +61,7 @@ bool calculation(kimm_se3_planner_ros_interface::plan_se3_path::Request &req, ki
     quat.y() = req.target_se3[0].rotation.y;
     quat.z() = req.target_se3[0].rotation.z;
     quat.w() = req.target_se3[0].rotation.w;
+    quat.normalize();
     t_se3_.rotation() = quat.toRotationMatrix();
     
     mask_.setZero(6);
