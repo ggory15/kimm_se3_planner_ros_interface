@@ -29,19 +29,30 @@ ros::ServiceServer action_server_;
 std::shared_ptr<TrajectorySE3Cubic> traj_cubic_;
 std::shared_ptr<TrajectorySE3Timeopt> traj_timeopt_;
 std::shared_ptr<TrajectorySE3Constant> traj_const_;
-int type_ = 0;
+
 Eigen::VectorXd kp_, kv_;
 Eigen::Vector3d vel_limit_, acc_limit_;
 Eigen::VectorXi mask_;
 std::vector<Eigen::VectorXd> res_traj_;
 std::vector<geometry_msgs::Transform> res_j_traj_;
 SE3 c_se3_, t_se3_;
+
+int type_ = 0;
 double duration_ = 0;
+std::vector<std_msgs::Bool> mask_ros_;
+geometry_msgs::Transform current_se3_ros_;
+std::vector<geometry_msgs::Transform> target_se3_ros_;
+float vel_limit_ros_, acc_limit_ros_;
 
 bool calculation(kimm_se3_planner_ros_interface::plan_se3_path::Request &req, kimm_se3_planner_ros_interface::plan_se3_path::Response &res)
 {
     type_ = req.traj_type;
     is_wholebody_ = req.iswholebody.data;
+    vel_limit_ros_ = req.vel_limit;
+    acc_limit_ros_ = req.acc_limit;
+    mask_ros_ = req.mask;
+    current_se3_ros_ = req.current_se3;
+    target_se3_ros_ = req.target_se3;
 
     c_se3_.translation()(0) = req.current_se3.translation.x;
     c_se3_.translation()(1) = req.current_se3.translation.y;
@@ -91,6 +102,7 @@ bool calculation(kimm_se3_planner_ros_interface::plan_se3_path::Request &req, ki
         res_traj_= traj_cubic_->getWholeTrajectory();
     }
     else{
+        duration_ = 10.0;
         vel_limit_ *= req.vel_limit;
         acc_limit_ *= req.acc_limit;
 
@@ -145,19 +157,26 @@ bool updateTrajectory(kimm_se3_planner_ros_interface::action_se3_path::Request &
         res.kp.clear();
         res.kv.clear();
 
-        res.res_traj = res_j_traj_;
         res.iswholebody.data = is_wholebody_;
         for (int i=0; i<6; i++){
             res.kp.push_back(kp_(i));
             res.kv.push_back(kv_(i));
         }
 
+        res.traj_type = type_;
+        res.current_se3 = current_se3_ros_;
+        res.target_se3 = target_se3_ros_;
+        res.vel_limit = vel_limit_ros_;
+        res.acc_limit = acc_limit_ros_;
+        res.duration = duration_;
+        res.mask = mask_ros_;
+
+
         return true;
     }
     else{
     	res_j_traj_.clear();
-    	res.res_traj.clear();
-        return true;
+        return false;
     }
     return true;
 }
