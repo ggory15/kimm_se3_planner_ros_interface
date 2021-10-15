@@ -1,3 +1,4 @@
+std_msgs/Time time
 geometry_msgs/Transform current_se3
 geometry_msgs/Transform[] target_se3
 float64 duration
